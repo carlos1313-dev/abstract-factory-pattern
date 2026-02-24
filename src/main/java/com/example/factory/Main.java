@@ -4,6 +4,7 @@
  */
 package com.example.factory;
 
+import com.example.factory.exception.UserCancelledException;
 import com.example.factory.model.CalculationResult;
 import com.example.factory.operations.Operation;
 import com.example.factory.operations.OperationFactory;
@@ -18,59 +19,68 @@ import java.util.Scanner;
  *
  * @author sangr
  */
+import javax.swing.SwingUtilities;
+import java.util.Scanner;
+import javax.swing.JOptionPane;
+
+import javax.swing.SwingUtilities;
+import java.awt.GraphicsEnvironment;
+import java.util.Scanner;
+
 public class Main {
 
     public static void main(String[] args) {
 
-        // 1. El usuario elige el modo al ejecutar el programa
-        //    Ejemplo: java Main console
-        //             java Main swing
-        //             java Main web  (Spring toma el control desde aquí)
-        // Preguntar el modo si no viene como argumento
-        String mode;
-        if (args.length > 0) {
-            mode = args[0];
+        // 1. Detectar el modo desde argumentos
+        //    java -jar calculadora.jar swing
+        String mode = (args.length > 0)
+                ? args[0].trim().toLowerCase()
+                : "console"; // modo por defecto
+
+        // 2. Arranque según el modo
+        if ("swing".equals(mode)) {
+
+            // Swing siempre en el EDT
+            SwingUtilities.invokeLater(() ->
+                runWithFactory(new SwingUIFactory())
+            );
+
+        } else if ("web".equals(mode)) {
+
+            System.out.println("Modo web activo");
+            // SpringApplication.run(App.class, args);
+
         } else {
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Elige el modo de ejecución:");
-            System.out.println("  1. console");
-            System.out.println("  2. swing");
-            System.out.print("Modo: ");
-            mode = scanner.nextLine().trim().toLowerCase();
+
+            // Consola (default)
+            runWithFactory(new ConsoleUIFactory());
         }
+    }
 
-        // 2. Abstract Factory — elige la familia completa de UI
-        UIFactory factory = switch (mode) {
-            case "swing" ->
-                new SwingUIFactory();
-            //case "web"   -> new WebUIFactory(0, 0, ""); // Spring toma el control real
-            default ->
-                new ConsoleUIFactory();
-        };
+    // Lógica común independiente de la UI
+    private static void runWithFactory(UIFactory factory) {
+        try {
+            Input input = factory.createInputHandler();
+            Output output = factory.createOutputRenderer();
 
-        // Si el modo es web, Spring Boot se encarga del resto
-        // El controller instancia su propia WebUIFactory con los datos del request
-        if (mode.equals("web")) {
-            System.out.println("Modo web activo. Accede a http://localhost:8080");
-            // Aquí arrancaría Spring: SpringApplication.run(App.class, args);
-            return;
+            String operationType = input.getOperationType();
+            double[] operands = input.getOperands();
+
+            Operation operation = OperationFactory.create(operationType);
+            if (operation == null) {
+                throw new IllegalArgumentException("Operación no soportada");
+            }
+
+            double result = operation.execute(operands[0], operands[1]);
+
+            output.render(
+                new CalculationResult(operation.getName(), result)
+            );
+
+        } catch (UserCancelledException e) {
+            System.out.println("Operación cancelada por el usuario");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        // 3. Crear los componentes — Main solo habla con interfaces
-        Input input = factory.createInputHandler();
-        Output output = factory.createOutputRenderer();
-
-        // 4. Pedir datos al usuario (consola o Swing, según la factory elegida)
-        String opType = input.getOperationType();
-        double[] operands = input.getOperands();
-
-        // 5. Factory Method — crea la operación correcta
-        Operation operation = OperationFactory.create(opType);
-
-        // 6. Ejecutar la operación
-        double result = operation.execute(operands[0], operands[1]);
-
-        // 7. Mostrar el resultado (cada OutputRenderer lo hace a su manera)
-        output.render(new CalculationResult(operation.getName(), result));
     }
 }
