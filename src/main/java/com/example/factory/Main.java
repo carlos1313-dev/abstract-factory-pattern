@@ -30,62 +30,37 @@ public class Main {
         if (args.length > 0) {
             mode = args[0];
         } else {
-            try (Scanner scanner = new Scanner(System.in)) {
+            Scanner scanner = new Scanner(System.in);
                 System.out.println("Elige el modo de ejecución:");
                 System.out.println("  1. console");
                 System.out.println("  2. swing"); //
                 System.out.println("  3. web");
                 System.out.print("Modo: ");
-                mode = scanner.nextLine().trim().toLowerCase();
-            }
+                mode = scanner.nextLine().trim().toLowerCase();           
         }
         
-        
-
+        // Si el modo es web, Spring Boot se encarga del resto
+        // El controller instancia su propia WebUIFactory con los datos del request
         
         if (mode.equals("web")) {
             System.out.println("Modo web activo. Accede a http://localhost:8080/index.html");
             SpringApplication.run(FactoryApplication.class, args); 
             return;
-            
         }
 
         // Abstract Factory — solo para consola y swing
         UIFactory factory = switch (mode) {
-            
-/*<<<<<<< HEAD
-            case "swing" -> new SwingUIFactory();
-            default      -> new ConsoleUIFactory();
-        };
-
-        Input  input  = factory.createInputHandler();
-=======*/
             case "swing" ->
                 new SwingUIFactory();
-            //case "web"   -> new WebUIFactory(0, 0, ""); // Spring toma el control real
             case "console" ->
                 new ConsoleUIFactory();
             default ->
             	throw new IllegalArgumentException("Modo inválido");
         };
 
-        // Si el modo es web, Spring Boot se encarga del resto
-        // El controller instancia su propia WebUIFactory con los datos del request
         
-        /*
-        if (mode.equals("web")) {
-            System.out.println("Modo web activo. Accede a http://localhost:8080");
-            // Aquí arrancaría Spring: SpringApplication.run(App.class, args);
-            return;
-            
-        */
-            
-            
-        
-
-        // 3. Crear los componentes — Main solo habla con interfaces
+        // Crear los componentes — Main solo habla con interfaces
         Input input = factory.createInputHandler();
-//>>>>>>> origin/dev-nicolas/fixUI
         Output output = factory.createOutputRenderer();
 
         String   opType   = input.getOperationType();
