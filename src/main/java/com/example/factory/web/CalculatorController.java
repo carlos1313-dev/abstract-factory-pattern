@@ -11,6 +11,7 @@ import com.example.factory.ui.Input;
 import com.example.factory.ui.web.WebOutputRenderer;
 import com.example.factory.ui.web.WebUIFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 // web/CalculatorController.java
 @Controller
+@CrossOrigin(origins = "*")
 public class CalculatorController {
 
     @GetMapping("/")
