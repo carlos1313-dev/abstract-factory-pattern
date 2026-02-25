@@ -14,13 +14,18 @@ import javax.swing.JOptionPane;
 public class SwingInputHandler implements Input {
     @Override
     public double[] getOperands() {
-        double a = Double.parseDouble(JOptionPane.showInputDialog("Primer número:"));
-        double b = Double.parseDouble(JOptionPane.showInputDialog("Segundo número:"));
-        return new double[]{a, b};
+    	
+    	String a = JOptionPane.showInputDialog("Primer número:");
+    	String b = JOptionPane.showInputDialog("Segundo número:");
+    	
+        if (a == null || b == null) {
+            throw new IllegalStateException("Operación cancelada por el usuario.");
+        }
+        return new double[]{Double.parseDouble(a), Double.parseDouble(b)};
     }
 
     @Override
     public String getOperationType() {
-        return JOptionPane.showInputDialog("Operación (add / subtract):");
+        return JOptionPane.showInputDialog("Operación (add / subtract / division / multiplication):");
     }
 }

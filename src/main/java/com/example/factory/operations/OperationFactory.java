@@ -13,6 +13,8 @@ public class OperationFactory {
         return switch (type.toLowerCase()) {
             case "add"      -> new AddOperation();
             case "subtract" -> new SubtractOperation();
+            case "multiplication" -> new MultiplicationOperation();
+            case "division" -> new DivisionOperation();
             default -> throw new IllegalArgumentException("Operación desconocida: " + type);
         };
     }

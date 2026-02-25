@@ -15,6 +15,8 @@ import com.example.factory.ui.swing.SwingUIFactory;
 import java.util.Scanner;
 import org.springframework.boot.SpringApplication;
 
+import javax.swing.SwingUtilities;
+
 /**
  *
  * @author sangr
@@ -37,6 +39,8 @@ public class Main {
                 mode = scanner.nextLine().trim().toLowerCase();
             }
         }
+        
+        
 
         
         if (mode.equals("web")) {
@@ -48,11 +52,40 @@ public class Main {
 
         // Abstract Factory — solo para consola y swing
         UIFactory factory = switch (mode) {
+            
+/*<<<<<<< HEAD
             case "swing" -> new SwingUIFactory();
             default      -> new ConsoleUIFactory();
         };
 
         Input  input  = factory.createInputHandler();
+=======*/
+            case "swing" ->
+                new SwingUIFactory();
+            //case "web"   -> new WebUIFactory(0, 0, ""); // Spring toma el control real
+            case "console" ->
+                new ConsoleUIFactory();
+            default ->
+            	throw new IllegalArgumentException("Modo inválido");
+        };
+
+        // Si el modo es web, Spring Boot se encarga del resto
+        // El controller instancia su propia WebUIFactory con los datos del request
+        
+        /*
+        if (mode.equals("web")) {
+            System.out.println("Modo web activo. Accede a http://localhost:8080");
+            // Aquí arrancaría Spring: SpringApplication.run(App.class, args);
+            return;
+            
+        */
+            
+            
+        
+
+        // 3. Crear los componentes — Main solo habla con interfaces
+        Input input = factory.createInputHandler();
+//>>>>>>> origin/dev-nicolas/fixUI
         Output output = factory.createOutputRenderer();
 
         String   opType   = input.getOperationType();
@@ -64,3 +97,5 @@ public class Main {
         output.render(new CalculationResult(operation.getName(), result));
     }
 }
+
+
