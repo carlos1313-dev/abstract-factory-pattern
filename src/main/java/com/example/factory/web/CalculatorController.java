@@ -18,10 +18,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
+ * Spring controller.
  *
- * @author sangr
+ * Before: received (double a, double b) — Spring auto converted, bypassing adapters.
+ * After:  receives (String operands, String inputMode)  raw data, adapters do the work.
+ *
+ * Form fields expected:
+ *   operands  : "3.5,2"   (two numbers separated by comma)
+ *   inputMode : "string" / "integer"   (default: "string")
+ *   operation : add / subtract / multiplication / division
  */
-// web/CalculatorController.java
 @Controller
 @CrossOrigin(origins = "*")
 public class CalculatorController {
@@ -34,34 +40,42 @@ public class CalculatorController {
     @PostMapping("/calculate")
     @ResponseBody
     public String calculate(
-            @RequestParam double a,
-            @RequestParam double b,
+            @RequestParam String operands,
+            @RequestParam(defaultValue = "string") String inputMode,
             @RequestParam String operation) {
 
-        // 1. Abstract Factory crea la familia Web
-        WebUIFactory factory = new WebUIFactory(a, b, operation);
+        // 1. Abstract Factory creates the Web family
+        //    Passes raw strings — adapters run inside WebInputHandler
+        WebUIFactory factory = new WebUIFactory(operands, inputMode, operation);
 
-        // 2. Obtener componentes — igual que en Main.java
-        Input input         = factory.createInputHandler();
-        WebOutputRenderer output   = (WebOutputRenderer) factory.createOutputRenderer();
+        // 2. Get components — same flow as Console/Swing Main.java
+        Input             input  = factory.createInputHandler();
+        WebOutputRenderer output = (WebOutputRenderer) factory.createOutputRenderer();
 
-        // 3. Factory Method crea la operación
+        // 3. Factory Method creates the operation
         Operation op = OperationFactory.create(input.getOperationType());
 
-        // 4. Ejecutar
-        double[] operands = input.getOperands();
-        double result     = op.execute(operands[0], operands[1]);
+        // 4. Execute — getOperands() triggers the adapter internally
+        double[] nums   = input.getOperands();
+        double   result = op.execute(nums[0], nums[1]);
 
-        // 5. Renderizar (guarda internamente el resultado)
+        // 5. Render - stores result internally
         output.render(new CalculationResult(op.getName(), result));
 
-        // 6. Devolver HTML al navegador
-        CalculationResult cr = output.getLastResult();
+        // 6. Build HTML response using output adapters
+        String formatted = output.getFormattedString();  // ResultToStringAdapter
+        int    truncated = output.getTruncatedInt();      // ResultToIntAdapter
+
         return """
                 <div class="result">
                     <span class="label">%s</span>
                     <span class="value">%s</span>
+                    <span class="value-int">Valor entero: %d</span>
                 </div>
-               """.formatted(cr.operationName(), cr.value());
+               """.formatted(
+                    output.getLastResult().operationName(),
+                    output.getLastResult().value(),
+                    truncated
+               );
     }
 }
