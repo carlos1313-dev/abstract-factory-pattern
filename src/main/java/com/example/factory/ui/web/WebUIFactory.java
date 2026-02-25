@@ -9,25 +9,26 @@ import com.example.factory.ui.Output;
 import com.example.factory.ui.UIFactory;
 
 /**
- *
- * @author sangr
+ * @author dev.nicolasrin & sangr
+ * Web Abstract Factory.
+ * Now receives raw String input so the adapters inside WebInputHandler
+ * do the type conversion — consistent with Console and Swing factories.
  */
-// ui/web/WebUIFactory.java
 public class WebUIFactory implements UIFactory {
 
-    private final double a;
-    private final double b;
+    private final String rawInput;     // e.g. "3.5,2"
+    private final String inputMode;    // "string" | "integer"
     private final String operationType;
 
-    public WebUIFactory(double a, double b, String operationType) {
-        this.a = a;
-        this.b = b;
+    public WebUIFactory(String rawInput, String inputMode, String operationType) {
+        this.rawInput      = rawInput;
+        this.inputMode     = inputMode;
         this.operationType = operationType;
     }
 
     @Override
     public Input createInputHandler() {
-        return new WebInputHandler(a, b, operationType);
+        return new WebInputHandler(rawInput, inputMode, operationType);
     }
 
     @Override
