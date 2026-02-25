@@ -31,7 +31,7 @@ public class Main {
             try (Scanner scanner = new Scanner(System.in)) {
                 System.out.println("Elige el modo de ejecución:");
                 System.out.println("  1. console");
-                System.out.println("  2. swing");
+                System.out.println("  2. swing"); //
                 System.out.println("  3. web");
                 System.out.print("Modo: ");
                 mode = scanner.nextLine().trim().toLowerCase();
@@ -43,6 +43,7 @@ public class Main {
             System.out.println("Modo web activo. Accede a http://localhost:8080/index.html");
             SpringApplication.run(FactoryApplication.class, args); 
             return;
+            
         }
 
         // Abstract Factory — solo para consola y swing
