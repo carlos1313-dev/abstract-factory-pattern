@@ -38,5 +38,5 @@ public class SwingOutputRenderer implements Output {
             "Resultado",
             JOptionPane.INFORMATION_MESSAGE
         );
-    }
+    }//hola
 }

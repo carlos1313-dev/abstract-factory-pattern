@@ -67,5 +67,5 @@ public class SwingInputHandler implements Input {
         if (op == null)
             throw new IllegalStateException("Operación cancelada por el usuario.");
         return op;
-    }
+    }//hola
 }
