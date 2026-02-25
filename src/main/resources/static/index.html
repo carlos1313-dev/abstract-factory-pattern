@@ -10,39 +10,44 @@
     <h1>Calculadora</h1>
     <form id="calcForm">
 
-        <!-- Tipo de entrada — refleja el patrón Adapter en el front -->
+        <!-- Selector de modo — igual que Swing con showOptionDialog -->
         <div class="field">
             <label>Modo de entrada</label>
-            <select id="inputMode" onchange="toggleInputMode()">
-                <option value="separate">Dos campos separados</option>
-                <option value="comma">Texto separado por coma (ej: 3.5,2)</option>
+            <select name="inputMode" id="inputMode" onchange="toggleMode()">
+                <option value="string">Texto separado por coma (ej: 3.5,2)</option>
+                <option value="integer">Dos campos enteros</option>
             </select>
         </div>
 
-        <!-- Modo: dos campos (StringToDoubleAdapter / campos individuales) -->
-        <div id="separateInputs">
+        <!-- Modo string: un solo campo, StringToDoubleAdapter en backend -->
+        <div id="modeString">
             <div class="field">
-                <label>Primer número</label>
-                <input type="number" id="fieldA" step="any">
-            </div>
-            <div class="field">
-                <label>Segundo número</label>
-                <input type="number" id="fieldB" step="any">
-            </div>
-        </div>
-
-        <!-- Modo: texto con coma (StringToDoubleAdapter) -->
-        <div id="commaInput" style="display:none">
-            <div class="field">
-                <label>Operandos (ej: 3.5,2)</label>
-                <input type="text" id="fieldComma" placeholder="3.5,2">
+                <label>Operandos</label>
+                <input type="text"
+                       id="fieldComma"
+                       placeholder="3.5,2">
+                <small style="color:#888">Dos números separados por coma</small>
             </div>
         </div>
 
-        <!-- Operaciones — incluyendo las nuevas -->
+        <!-- Modo integer: dos campos separados, IntegerToDoubleAdapter en backend -->
+        <div id="modeInteger" style="display:none">
+            <div class="field">
+                <label>Primer entero</label>
+                <input type="number" id="fieldA" step="1">
+            </div>
+            <div class="field">
+                <label>Segundo entero</label>
+                <input type="number" id="fieldB" step="1">
+            </div>
+        </div>
+
+        <!-- Campo oculto — siempre envía "número,número" al controller -->
+        <input type="hidden" name="operands" id="operands">
+
         <div class="field">
             <label>Operación</label>
-            <select name="operation" id="operation">
+            <select name="operation">
                 <option value="add">Suma</option>
                 <option value="subtract">Resta</option>
                 <option value="multiplication">Multiplicación</option>
@@ -53,51 +58,63 @@
 
         <button type="submit">Calcular</button>
     </form>
+
     <div id="output"></div>
 </div>
 
 <script>
-    // Alterna la vista según el modo de entrada elegido
-    function toggleInputMode() {
+    // Alterna la vista igual que Swing alterna entre adapters
+    function toggleMode() {
         const mode = document.getElementById('inputMode').value;
-        document.getElementById('separateInputs').style.display = mode === 'separate' ? 'block' : 'none';
-        document.getElementById('commaInput').style.display     = mode === 'comma'    ? 'block' : 'none';
+        document.getElementById('modeString').style.display  = mode === 'string'  ? 'block' : 'none';
+        document.getElementById('modeInteger').style.display = mode === 'integer' ? 'block' : 'none';
     }
 
     document.getElementById('calcForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const mode      = document.getElementById('inputMode').value;
-        const operation = document.getElementById('operation').value;
-        let a, b;
+        const mode = document.getElementById('inputMode').value;
+        let operandsValue;
 
-        // Adapter web: parsea según el modo elegido por el usuario
-        // Equivale a StringToDoubleAdapter o campos directos según selección
-        if (mode === 'comma') {
-            const raw = document.getElementById('fieldComma').value.trim();
-            const parts = raw.split(',');
-            if (parts.length !== 2) {
-                document.getElementById('output').innerHTML =
-                    '<div class="result"><span class="label">Error</span>' +
-                    '<span class="value">Formato inválido. Usa: 3.5,2</span></div>';
+        if (mode === 'integer') {
+            // Dos campos enteros → construye "a,b" para que
+            // IntegerToDoubleAdapter lo procese en el backend
+            const a = document.getElementById('fieldA').value.trim();
+            const b = document.getElementById('fieldB').value.trim();
+
+            if (!a || !b) {
+                showError('Completa ambos campos enteros.');
                 return;
             }
-            a = parseFloat(parts[0].trim());
-            b = parseFloat(parts[1].trim());
+            if (!Number.isInteger(Number(a)) || !Number.isInteger(Number(b))) {
+                showError('En modo entero solo se permiten números sin decimales.');
+                return;
+            }
+
+            operandsValue = `${a},${b}`;
+
         } else {
-            a = parseFloat(document.getElementById('fieldA').value);
-            b = parseFloat(document.getElementById('fieldB').value);
+            // Campo de texto → pasa directo a StringToDoubleAdapter en backend
+            const raw = document.getElementById('fieldComma').value.trim();
+
+            if (!raw) {
+                showError('Ingresa los operandos.');
+                return;
+            }
+
+            const parts = raw.split(',');
+            if (parts.length !== 2 || parts.some(p => p.trim() === '')) {
+                showError('Formato inválido. Usa: número,número (ej: 3.5,2)');
+                return;
+            }
+
+            operandsValue = raw;
         }
 
-        // Validación de división por cero antes de enviar
-        if (operation === 'division' && b === 0) {
-            document.getElementById('output').innerHTML =
-                '<div class="result"><span class="label">Error</span>' +
-                '<span class="value">No se puede dividir entre cero</span></div>';
-            return;
-        }
+        // Inyecta el valor en el campo oculto antes de enviar
+        document.getElementById('operands').value = operandsValue;
 
-        const params = new URLSearchParams({ a, b, operation });
+        const params = new URLSearchParams(new FormData(e.target));
         const response = await fetch('/calculate', {
             method: 'POST',
             body: params
@@ -105,6 +122,14 @@
 
         document.getElementById('output').innerHTML = await response.text();
     });
+
+    function showError(msg) {
+        document.getElementById('output').innerHTML =
+            `<div class="result">
+                <span class="label">Error</span>
+                <span class="value">${msg}</span>
+             </div>`;
+    }
 </script>
 </body>
 </html>
