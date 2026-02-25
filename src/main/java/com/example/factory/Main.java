@@ -14,6 +14,8 @@ import com.example.factory.ui.console.ConsoleUIFactory;
 import com.example.factory.ui.swing.SwingUIFactory;
 import java.util.Scanner;
 
+import javax.swing.SwingUtilities;
+
 /**
  *
  * @author sangr
@@ -38,14 +40,18 @@ public class Main {
             System.out.print("Modo: ");
             mode = scanner.nextLine().trim().toLowerCase();
         }
+        
+        
 
         // 2. Abstract Factory — elige la familia completa de UI
         UIFactory factory = switch (mode) {
             case "swing" ->
                 new SwingUIFactory();
             //case "web"   -> new WebUIFactory(0, 0, ""); // Spring toma el control real
-            default ->
+            case "console" ->
                 new ConsoleUIFactory();
+            default ->
+            	throw new IllegalArgumentException("Modo inválido");
         };
 
         // Si el modo es web, Spring Boot se encarga del resto
@@ -54,6 +60,9 @@ public class Main {
             System.out.println("Modo web activo. Accede a http://localhost:8080");
             // Aquí arrancaría Spring: SpringApplication.run(App.class, args);
             return;
+            
+            
+            
         }
 
         // 3. Crear los componentes — Main solo habla con interfaces
