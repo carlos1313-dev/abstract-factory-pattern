@@ -13,11 +13,13 @@ import com.example.factory.ui.UIFactory;
 import com.example.factory.ui.console.ConsoleUIFactory;
 import com.example.factory.ui.swing.SwingUIFactory;
 import java.util.Scanner;
+import org.springframework.boot.SpringApplication;
 
 /**
  *
  * @author sangr
  */
+
 public class Main {
 
     public static void main(String[] args) {
@@ -52,7 +54,7 @@ public class Main {
         // El controller instancia su propia WebUIFactory con los datos del request
         if (mode.equals("web")) {
             System.out.println("Modo web activo. Accede a http://localhost:8080");
-            // Aquí arrancaría Spring: SpringApplication.run(App.class, args);
+            SpringApplication.run(Main.class, args);
             return;
         }
 

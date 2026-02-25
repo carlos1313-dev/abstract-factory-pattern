@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card">
+    <h1>Calculadora</h1>
+
+    <form id="calcForm">
+        <div class="field">
+            <label>Primer número</label>
+            <input type="number" name="a" step="any" required>
+        </div>
+        <div class="field">
+            <label>Segundo número</label>
+            <input type="number" name="b" step="any" required>
+        </div>
+        <div class="field">
+            <label>Operación</label>
+            <select name="operation">
+                <option value="add">Suma</option>
+                <option value="subtract">Resta</option>
+                <option value="legacy-add">Suma (legacy)</option>
+            </select>
+        </div>
+        <button type="submit">Calcular</button>
+    </form>
+
+    <div id="output"></div>
+</div>
+
+<script>
+    document.getElementById('calcForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const form = new FormData(e.target);
+        const params = new URLSearchParams(form);
+
+        const response = await fetch('/calculate', {
+            method: 'POST',
+            body: params
+        });
+
+        document.getElementById('output').innerHTML = await response.text();
+    });
+</script>
+
+</body>
+</html>
