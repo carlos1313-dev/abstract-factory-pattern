@@ -9,6 +9,7 @@ import com.example.factory.ui.Output;
 import com.example.factory.ui.UIFactory;
 
 /**
+ * @author dev.nicolasrin & sangr
  * Web Abstract Factory.
  * Now receives raw String input so the adapters inside WebInputHandler
  * do the type conversion — consistent with Console and Swing factories.

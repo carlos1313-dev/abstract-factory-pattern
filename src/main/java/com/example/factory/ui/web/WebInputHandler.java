@@ -6,6 +6,7 @@ import com.example.factory.adapter.input.StringToDoubleAdapter;
 import com.example.factory.ui.Input;
 
 /**
+ * @author dev.nicolasrin & sangr
  * Web input handler.
  * The HTTP request arrives as a raw String (e.g. "3.5,2").
  * Adapters convert it to double[] — same shared adapters used by Console and Swing.

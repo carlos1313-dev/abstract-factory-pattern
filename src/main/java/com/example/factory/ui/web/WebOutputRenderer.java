@@ -11,6 +11,7 @@ import com.example.factory.model.CalculationResult;
 import com.example.factory.ui.Output;
 
 /**
+ * @author dev.nicolasruin & sangr
  * Web output renderer.
  * Uses the SAME shared output adapters as Console and Swing.
  *

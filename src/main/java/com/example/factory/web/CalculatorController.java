@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
+ * @author dev.nicolas run & sangr
  * Spring controller.
  *
  * Before: received (double a, double b) — Spring auto converted, bypassing adapters.
